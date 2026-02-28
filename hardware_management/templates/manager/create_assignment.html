@@ -1,0 +1,504 @@
+{% extends 'base.html' %}
+{% block title %}Create Assignment - Eduquity Hardware Management{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h2>Create Hardware Assignment</h2>
+        <p class="text-muted">Assign hardware to employees for specific projects</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-clipboard-check"></i> Assignment Details
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{% url 'create_assignment' %}" id="assignmentForm">
+                    {% csrf_token %}
+                    
+                    <!-- Basic Information -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="employee" class="form-label">Employee *</label>
+                                <select class="form-select" id="employee" name="employee" required>
+                                    <option value="">Select employee</option>
+                                    {% for emp in employees %}
+                                    <option value="{{ emp.id }}">{{ emp.get_full_name|default:emp.username }} ({{ emp.email }})</option>
+                                    {% empty %}
+                                    <option value="" disabled>No employees available</option>
+                                    {% endfor %}
+                                </select>
+                                {% if employees|length == 0 %}
+                                <small class="text-danger">
+                                    <i class="bi bi-exclamation-triangle"></i> 
+                                    No employees found. Please create employees first.
+                                </small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="project" class="form-label">Project *</label>
+                                <select class="form-select" id="project" name="project" required>
+                                    <option value="">Select project</option>
+                                    {% for proj in projects %}
+                                    <option value="{{ proj.id }}">{{ proj.project_id }} - {{ proj.project_name }}</option>
+                                    {% empty %}
+                                    <option value="" disabled>No projects available</option>
+                                    {% endfor %}
+                                </select>
+                                {% if projects|length == 0 %}
+                                <small class="text-danger">
+                                    <i class="bi bi-exclamation-triangle"></i> 
+                                    No projects found. Please create projects first.
+                                </small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Exam City and Return Date -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="exam_city" class="form-label">Exam City *</label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="exam_city" 
+                                       name="exam_city" 
+                                       required
+                                       placeholder="Enter the city where the exam will take place">
+                                <small class="text-muted">City where the employee will take the exam</small>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="expected_return_date" class="form-label">Expected Return Date *</label>
+                                <input type="date" 
+                                       class="form-control" 
+                                       id="expected_return_date" 
+                                       name="expected_return_date" 
+                                       required
+                                       min="{{ today|date:'Y-m-d' }}">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Hardware Selection with Manual Serial Entry -->
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <h5>Add Hardware Items</h5>
+                            <p class="text-muted">Select hardware type and enter serial numbers manually</p>
+                            
+                            {% if messages %}
+                                {% for message in messages %}
+                                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                        <i class="bi bi-info-circle"></i> {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                            
+                            <!-- Hardware Items Container -->
+                            <div id="hardwareItemsContainer">
+                                <div class="hardware-item-row mb-3 p-3 border rounded bg-light">
+                                    <div class="row g-3 align-items-end">
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-bold">Hardware Type</label>
+                                            <select class="form-select hardware-type-select" name="hardware_type[]" required>
+                                                <option value="">Select hardware type</option>
+                                                {% for hw_type in hardware_types %}
+                                                <option value="{{ hw_type.id }}" data-name="{{ hw_type.name }}">
+                                                    {{ hw_type.name }}
+                                                </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-bold">
+                                                <i class="bi bi-upc-scan"></i> Serial Number
+                                            </label>
+                                            <input type="text" 
+                                                   class="form-control serial-number-input" 
+                                                   name="serial_numbers[]" 
+                                                   placeholder="Enter serial number"
+                                                   required>
+                                            <small class="text-muted">Enter the serial number shown on the hardware</small>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="form-label fw-bold">Status</label>
+                                            <div id="status_{{ forloop.counter0 }}" class="status-indicator text-muted">
+                                                <i class="bi bi-dash-circle"></i> Not verified
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2 text-end">
+                                            <button type="button" class="btn btn-outline-danger remove-item-btn" disabled style="opacity: 0.5; cursor: not-allowed;">
+                                                <i class="bi bi-trash"></i> Remove
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-2">
+                                        <div class="col-md-12">
+                                            <div class="verification-message text-danger" style="font-size: 0.9em;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Add More Button -->
+                            <button type="button" id="addHardwareItem" class="btn btn-outline-primary mb-3">
+                                <i class="bi bi-plus-circle"></i> Add Another Hardware Item
+                            </button>
+                            
+                            <!-- Selected Hardware Summary -->
+                            <div class="card mt-3 bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title">
+                                        <i class="bi bi-clipboard-check"></i> Hardware Items to Assign
+                                    </h6>
+                                    <div id="selectedHardwareSummary" class="mt-2">
+                                        <p class="text-muted mb-0">No hardware items added yet</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Notes -->
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <label for="notes" class="form-label">Notes</label>
+                                <textarea class="form-control" 
+                                          id="notes" 
+                                          name="notes" 
+                                          rows="3" 
+                                          placeholder="Additional notes..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> 
+                        <strong>Serial Number Verification:</strong> System will verify if the entered serial number exists and is available in inventory.
+                    </div>
+                    
+                    <button type="submit" class="btn btn-outline-info" id="submitBtn">
+                        <i class="bi bi-clipboard-check"></i> Create Assignment
+                    </button>
+                    <a href="{% url 'view_assignments' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to Assignments
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let itemCount = 1;
+        const container = document.getElementById('hardwareItemsContainer');
+        const addButton = document.getElementById('addHardwareItem');
+        const form = document.getElementById('assignmentForm');
+        
+        // Available hardware data from server (pass via data attribute or AJAX)
+        const availableHardware = {
+            {% for hw_type in hardware_types %}
+            {% with available_items=hw_type.hardware_set.filter|dictsort:"serial_number" %}
+            '{{ hw_type.id }}': [
+                {% for hardware in available_items %}
+                '{{ hardware.serial_number }}'{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ],
+            {% endwith %}
+            {% endfor %}
+        };
+        
+        // Function to verify serial number
+        function verifySerialNumber(hardwareTypeId, serialNumber, statusElement, messageElement) {
+            if (!hardwareTypeId || !serialNumber) {
+                statusElement.innerHTML = '<i class="bi bi-dash-circle"></i> Not verified';
+                statusElement.className = 'status-indicator text-muted';
+                messageElement.textContent = '';
+                return false;
+            }
+            
+            const availableSerials = availableHardware[hardwareTypeId] || [];
+            
+            if (availableSerials.includes(serialNumber)) {
+                statusElement.innerHTML = '<i class="bi bi-check-circle"></i> Verified';
+                statusElement.className = 'status-indicator text-success fw-bold';
+                messageElement.textContent = '✓ Serial number verified and available';
+                messageElement.className = 'verification-message text-success';
+                return true;
+            } else {
+                statusElement.innerHTML = '<i class="bi bi-exclamation-triangle"></i> Not Found';
+                statusElement.className = 'status-indicator text-danger fw-bold';
+                messageElement.textContent = '✗ Serial number not found or not available in inventory';
+                messageElement.className = 'verification-message text-danger';
+                return false;
+            }
+        }
+        
+        // Function to add new hardware item row
+        function addHardwareItemRow() {
+            const newRow = document.createElement('div');
+            newRow.className = 'hardware-item-row mb-3 p-3 border rounded bg-white';
+            newRow.innerHTML = `
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Hardware Type</label>
+                        <select class="form-select hardware-type-select" name="hardware_type[]" required>
+                            <option value="">Select hardware type</option>
+                            {% for hw_type in hardware_types %}
+                            <option value="{{ hw_type.id }}" data-name="{{ hw_type.name }}">
+                                {{ hw_type.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-upc-scan"></i> Serial Number
+                        </label>
+                        <input type="text" 
+                               class="form-control serial-number-input" 
+                               name="serial_numbers[]" 
+                               placeholder="Enter serial number from hardware sticker"
+                               required>
+                        <small class="text-muted">Enter the serial number exactly as shown on the hardware</small>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold">Status</label>
+                        <div class="status-indicator text-muted">
+                            <i class="bi bi-dash-circle"></i> Not verified
+                        </div>
+                    </div>
+                    <div class="col-md-2 text-end">
+                        <button type="button" class="btn btn-outline-danger remove-item-btn">
+                            <i class="bi bi-trash"></i> Remove
+                        </button>
+                    </div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-md-12">
+                        <div class="verification-message text-danger" style="font-size: 0.9em;"></div>
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(newRow);
+            
+            // Add event listeners to the new row
+            const hardwareSelect = newRow.querySelector('.hardware-type-select');
+            const serialInput = newRow.querySelector('.serial-number-input');
+            const statusDiv = newRow.querySelector('.status-indicator');
+            const messageDiv = newRow.querySelector('.verification-message');
+            const removeBtn = newRow.querySelector('.remove-item-btn');
+            
+            // Verify on input change
+            function verify() {
+                verifySerialNumber(hardwareSelect.value, serialInput.value.trim(), statusDiv, messageDiv);
+                updateSummary();
+            }
+            
+            hardwareSelect.addEventListener('change', verify);
+            serialInput.addEventListener('input', verify);
+            serialInput.addEventListener('blur', verify);
+            
+            // Remove button functionality
+            removeBtn.addEventListener('click', function() {
+                newRow.remove();
+                updateSummary();
+            });
+        }
+        
+        // Function to update summary
+        function updateSummary() {
+            const summaryDiv = document.getElementById('selectedHardwareSummary');
+            const rows = document.querySelectorAll('.hardware-item-row');
+            const validItems = [];
+            let isValidCount = 0;
+            
+            rows.forEach((row, index) => {
+                const hardwareSelect = row.querySelector('.hardware-type-select');
+                const serialInput = row.querySelector('.serial-number-input');
+                const statusDiv = row.querySelector('.status-indicator');
+                
+                const hardwareTypeId = hardwareSelect.value;
+                const hardwareTypeName = hardwareSelect.selectedOptions[0]?.dataset.name || '';
+                const serialNumber = serialInput.value.trim();
+                const isVerified = statusDiv.classList.contains('text-success');
+                
+                if (hardwareTypeId && serialNumber && isVerified) {
+                    validItems.push({
+                        type: hardwareTypeName,
+                        serial: serialNumber
+                    });
+                    isValidCount++;
+                }
+            });
+            
+            if (validItems.length === 0) {
+                summaryDiv.innerHTML = '<p class="text-muted mb-0">No verified hardware items added yet</p>';
+                document.getElementById('submitBtn').disabled = true;
+            } else {
+                let html = '<div class="table-responsive"><table class="table table-sm table-borderless mb-0">';
+                html += '<thead><tr><th>#</th><th>Hardware Type</th><th>Serial Number</th><th>Status</th></tr></thead><tbody>';
+                
+                validItems.forEach((item, index) => {
+                    html += `<tr>
+                                <td>${index + 1}</td>
+                                <td>${item.type}</td>
+                                <td><code>${item.serial}</code></td>
+                                <td><span class="badge bg-success">Verified</span></td>
+                            </tr>`;
+                });
+                
+                html += '</tbody></table></div>';
+                html += `<p class="mt-2 mb-0 fw-bold text-success">Total verified items: ${validItems.length}</p>`;
+                
+                summaryDiv.innerHTML = html;
+                document.getElementById('submitBtn').disabled = false;
+            }
+        }
+        
+        // Add event listener to add button
+        addButton.addEventListener('click', addHardwareItemRow);
+        
+        // Initialize first row's remove button state
+        const firstRemoveBtn = document.querySelector('.remove-item-btn');
+        if (firstRemoveBtn) {
+            firstRemoveBtn.disabled = true;
+            firstRemoveBtn.style.opacity = '0.5';
+            firstRemoveBtn.style.cursor = 'not-allowed';
+        }
+        
+        // Add verification listeners to initial row
+        const initialHardwareSelect = document.querySelector('.hardware-type-select');
+        const initialSerialInput = document.querySelector('.serial-number-input');
+        const initialStatusDiv = document.querySelector('.status-indicator');
+        const initialMessageDiv = document.querySelector('.verification-message');
+        
+        if (initialHardwareSelect && initialSerialInput) {
+            function verifyInitial() {
+                verifySerialNumber(
+                    initialHardwareSelect.value, 
+                    initialSerialInput.value.trim(), 
+                    initialStatusDiv, 
+                    initialMessageDiv
+                );
+                updateSummary();
+            }
+            
+            initialHardwareSelect.addEventListener('change', verifyInitial);
+            initialSerialInput.addEventListener('input', verifyInitial);
+            initialSerialInput.addEventListener('blur', verifyInitial);
+        }
+        
+        // Form validation
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const rows = document.querySelectorAll('.hardware-item-row');
+                let hasValidItems = false;
+                let errorMessages = [];
+                
+                rows.forEach((row, index) => {
+                    const hardwareSelect = row.querySelector('.hardware-type-select');
+                    const serialInput = row.querySelector('.serial-number-input');
+                    const statusDiv = row.querySelector('.status-indicator');
+                    
+                    if (!hardwareSelect.value) {
+                        errorMessages.push(`Row ${index + 1}: Please select a hardware type`);
+                    }
+                    
+                    if (!serialInput.value.trim()) {
+                        errorMessages.push(`Row ${index + 1}: Please enter a serial number`);
+                    }
+                    
+                    if (hardwareSelect.value && serialInput.value.trim() && statusDiv.classList.contains('text-success')) {
+                        hasValidItems = true;
+                    }
+                });
+                
+                if (!hasValidItems) {
+                    e.preventDefault();
+                    alert('Please add at least one verified hardware item with valid serial number.');
+                } else if (errorMessages.length > 0) {
+                    e.preventDefault();
+                    alert('Please fix the following errors:\n' + errorMessages.join('\n'));
+                }
+            });
+        }
+        
+        // Set minimum date for return date
+        const today = new Date().toISOString().split('T')[0];
+        const returnDateInput = document.getElementById('expected_return_date');
+        if (returnDateInput) {
+            returnDateInput.min = today;
+        }
+    });
+</script>
+
+<style>
+    .hardware-item-row {
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    
+    .hardware-item-row:hover {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    
+    .status-indicator {
+        font-weight: 500;
+        padding: 0.25rem 0;
+    }
+    
+    .status-indicator.text-success {
+        color: #198754 !important;
+    }
+    
+    .status-indicator.text-danger {
+        color: #dc3545 !important;
+    }
+    
+    code {
+        background-color: #f8f9fa;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-size: 0.9em;
+        font-weight: 500;
+        color: #0d6efd;
+    }
+    
+    .verification-message {
+        margin-top: 0.25rem;
+        font-size: 0.85rem;
+    }
+    
+    .btn-eduquity:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+    }
+    
+    #selectedHardwareSummary {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    
+    .serial-number-input {
+        font-family: monospace;
+        text-transform: uppercase;
+    }
+</style>
+{% endblock %}

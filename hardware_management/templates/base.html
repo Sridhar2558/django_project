@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Eduquity Hardware Management{% endblock %}</title>
+    <!-- Bootstrap Icons - Latest version with CDN fallback -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Fallback for Bootstrap Icons if CDN fails -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- ElaAdmin Inspired Styles -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+            color: #1e293b;
+            line-height: 1.5;
+        }
+
+        /* Layout */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar - ElaAdmin Style */
+        .sidebar {
+            width: 260px;
+            background: #ffffff;
+            border-right: 1px solid #e2e8f0;
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 20px rgba(0,0,0,0.02);
+        }
+
+        .sidebar-header {
+            padding: 24px 20px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: #E04D00;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .logo i {
+            font-size: 1.5rem;
+            line-height: 1;
+        }
+
+        .brand-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1e293b;
+            letter-spacing: -0.5px;
+        }
+
+        .brand-name span {
+            color: #E04D00;
+            font-weight: 300;
+        }
+
+        /* Navigation */
+        .sidebar-nav {
+            flex: 1;
+            padding: 20px 0;
+            overflow-y: auto;
+        }
+
+        .nav-section-title {
+            padding: 12px 20px 8px;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 12px 20px;
+            color: #64748b;
+            text-decoration: none;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 2px 8px;
+            border-radius: 8px;
+        }
+
+        .nav-item:hover {
+            background-color: #f8fafc;
+            color: #E04D00;
+        }
+
+        .nav-item:hover .nav-icon {
+            color: #E04D00;
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, #E04D00, #FF6B1A);
+            color: white;
+            box-shadow: 0 4px 10px rgba(224, 77, 0, 0.2);
+        }
+
+        .nav-item.active .nav-icon {
+            color: white;
+        }
+
+        .nav-icon {
+            width: 24px;
+            text-align: center;
+            font-size: 1.2rem;
+            color: #94a3b8;
+            display: inline-block;
+        }
+
+        .nav-text {
+            flex: 1;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .nav-badge {
+            background-color: #e2e8f0;
+            color: #64748b;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .nav-item.active .nav-badge {
+            background-color: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        /* Sidebar Footer */
+        .sidebar-footer {
+            padding: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #E04D00, #FF6B1A);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .user-avatar i {
+            font-size: 1.5rem;
+        }
+
+        .user-details h6 {
+            margin: 0;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .user-details small {
+            color: #94a3b8;
+            font-size: 0.75rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Navigation */
+        .top-nav {
+            height: 70px;
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 0 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 900;
+        }
+
+        .page-title h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0;
+            letter-spacing: -0.5px;
+        }
+
+        .page-title p {
+            color: #94a3b8;
+            font-size: 0.85rem;
+            margin: 5px 0 0 0;
+        }
+
+        .mobile-menu-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #1e293b;
+            padding: 5px;
+            margin-right: 15px;
+            cursor: pointer;
+            display: none;
+        }
+
+        .mobile-menu-btn i {
+            font-size: 1.8rem;
+            line-height: 1;
+        }
+
+        .top-nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-action {
+            padding: 8px 16px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            color: #64748b;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-action i {
+            font-size: 1.1rem;
+            line-height: 1;
+        }
+
+        .btn-action:hover {
+            background: #f8fafc;
+            border-color: #E04D00;
+            color: #E04D00;
+        }
+
+        .btn-action:hover i {
+            color: #E04D00;
+        }
+
+        .btn-action.primary {
+            background: #E04D00;
+            color: white;
+            border-color: #E04D00;
+        }
+
+        .btn-action.primary i {
+            color: white;
+        }
+
+        .btn-action.primary:hover {
+            background: #c44500;
+        }
+
+        .btn-action.warning {
+            background: #f59e0b;
+            color: white;
+            border-color: #f59e0b;
+        }
+
+        .btn-action.warning i {
+            color: white;
+        }
+
+        /* Content Area */
+        .content-area {
+            flex: 1;
+            padding: 30px;
+            background: #f1f5f9;
+        }
+
+        /* Messages */
+        .messages-container {
+            margin-bottom: 30px;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            border: none;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .alert i {
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .alert-success {
+            background: #dff0d8;
+            color: #2e7d32;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            color: #c62828;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #b45f06;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0b5e6b;
+        }
+
+        /* First Login Banner */
+        .first-login-banner {
+            background: linear-gradient(135deg, #f59e0b, #e67e22);
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            animation: slideDown 0.5s ease;
+        }
+
+        .first-login-banner i {
+            font-size: 1.8rem;
+            line-height: 1;
+        }
+
+        /* Footer */
+        .main-footer {
+            background: white;
+            border-top: 1px solid #e2e8f0;
+            padding: 20px 30px;
+            margin-top: auto;
+        }
+
+        .copyright {
+            text-align: center;
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        .copyright i {
+            font-size: 0.9rem;
+            margin-right: 4px;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+                z-index: 1100;
+            }
+            
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 1050;
+            }
+            
+            .overlay.show {
+                display: block;
+            }
+
+            .page-title h1 {
+                font-size: 1.2rem;
+            }
+        }
+        
+        @media (min-width: 993px) {
+            .mobile-menu-btn {
+                display: none;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .top-nav {
+                padding: 0 15px;
+            }
+            
+            .content-area {
+                padding: 20px;
+            }
+            
+            .quick-actions {
+                display: none;
+            }
+
+            .first-login-banner {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+        }
+
+        /* Utility Classes */
+        .bg-opacity-10 { opacity: 0.1; }
+        .text-primary { color: #E04D00 !important; }
+        .bg-primary { background-color: #E04D00 !important; }
+        .border-primary { border-color: #E04D00 !important; }
+        .btn-primary {
+            background-color: #E04D00;
+            border-color: #E04D00;
+        }
+        .btn-primary:hover {
+            background-color: #c44500;
+            border-color: #c44500;
+        }
+        
+        /* Icon visibility fix */
+        .bi {
+            display: inline-block;
+            font-size: inherit;
+            vertical-align: -0.125em;
+        }
+        
+        /* Ensure icons in nav are visible */
+        .nav-item i {
+            font-size: 1.2rem;
+            width: 1.5rem;
+            text-align: center;
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+    {% block inline_css %}{% endblock %}
+</head>
+<body>
+    {% if user.is_authenticated %}
+    <!-- Mobile Overlay -->
+    <div class="overlay" id="overlay"></div>
+    
+    <!-- App Container -->
+    <div class="app-container">
+        <!-- Sidebar - ElaAdmin Style -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Sidebar Header -->
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="bi bi-laptop"></i>
+                </div>
+                <div class="brand-name">Eduquity<span>.</span></div>
+            </div>
+            
+            <!-- Sidebar Navigation -->
+            {% if user.user_type == 'employee' and user.is_first_login %}
+                <!-- Minimal Navigation for First Login -->
+                <nav class="sidebar-nav">
+                    <div class="nav-section-title">Account Setup</div>
+                    <div class="nav-item" style="background: rgba(245,158,11,0.1); color: #f59e0b;">
+                        <i class="bi bi-shield-lock nav-icon" style="color: #f59e0b;"></i>
+                        <span class="nav-text">First Login</span>
+                    </div>
+                    
+                    <div class="nav-section-title">Account</div>
+                    <a href="{% url 'change_password' %}" class="nav-item {% if request.path == '/change-password/' %}active{% endif %}">
+                        <i class="bi bi-key nav-icon"></i>
+                        <span class="nav-text">Change Password</span>
+                        <span class="nav-badge">Required</span>
+                    </a>
+                    
+                    <div class="nav-section-title">Settings</div>
+                    <a href="{% url 'logout' %}" class="nav-item">
+                        <i class="bi bi-box-arrow-right nav-icon"></i>
+                        <span class="nav-text">Logout</span>
+                    </a>
+                </nav>
+            {% else %}
+                <!-- Full Navigation -->
+                <nav class="sidebar-nav">
+                    <div class="nav-section-title">Main</div>
+                    <a href="{% if user.user_type == 'manager' %}{% url 'manager_dashboard' %}{% else %}{% url 'employee_dashboard' %}{% endif %}" 
+                       class="nav-item {% if request.path == '/manager/dashboard/' or request.path == '/employee/dashboard/' %}active{% endif %}">
+                        <i class="bi bi-speedometer2 nav-icon"></i>
+                        <span class="nav-text">Dashboard</span>
+                    </a>
+                    
+                    {% if user.user_type == 'manager' %}
+                    <div class="nav-section-title">Management</div>
+                    
+                    <a href="{% url 'manage_hardware' %}" class="nav-item {% if '/hardware/' in request.path %}active{% endif %}">
+                        <i class="bi bi-laptop nav-icon"></i>
+                        <span class="nav-text">Hardware</span>
+                        <span class="nav-badge">{{ hardware_count|default:"0" }}</span>
+                    </a>
+                    
+                    <a href="{% url 'create_employee' %}" class="nav-item {% if '/employee/' in request.path %}active{% endif %}">
+                        <i class="bi bi-people nav-icon"></i>
+                        <span class="nav-text">Employees</span>
+                        <span class="nav-badge">{{ employee_count|default:"0" }}</span>
+                    </a>
+                    
+                    <a href="{% url 'create_project' %}" class="nav-item {% if '/project/' in request.path %}active{% endif %}">
+                        <i class="bi bi-folder nav-icon"></i>
+                        <span class="nav-text">Projects</span>
+                    </a>
+                    
+                    <div class="nav-section-title">Operations</div>
+                    
+                    <a href="{% url 'view_assignments' %}" class="nav-item {% if '/assignment/' in request.path %}active{% endif %}">
+                        <i class="bi bi-clipboard-check nav-icon"></i>
+                        <span class="nav-text">Assignments</span>
+                        <span class="nav-badge">{{ assignment_count|default:"0" }}</span>
+                    </a>
+                    
+                    <div class="nav-section-title">Verification</div>
+                    
+                    <a href="{% url 'view_serial_entries' %}" class="nav-item {% if '/serial-entries' in request.path %}active{% endif %}">
+                        <i class="bi bi-list-check nav-icon"></i>
+                        <span class="nav-text">Manual Verification</span>
+                        <span class="nav-badge" id="pendingSerialBadge"></span>
+                    </a>
+                    
+                    <a href="{% url 'manager_verification_status' %}" class="nav-item {% if '/verification-status' in request.path %}active{% endif %}">
+                        <i class="bi bi-shield-check nav-icon"></i>
+                        <span class="nav-text">Verification Status</span>
+                    </a>
+                    
+                    {% else %}
+                    <!-- Employee Navigation -->
+                    <div class="nav-section-title">My Work</div>
+                    
+                    <a href="{% url 'view_my_assignments' %}" class="nav-item {% if '/my-assignments' in request.path %}active{% endif %}">
+                        <i class="bi bi-clipboard-data nav-icon"></i>
+                        <span class="nav-text">My Assignments</span>
+                    </a>
+                    
+                    <a href="{% url 'my_hardware' %}" class="nav-item {% if '/my-hardware' in request.path %}active{% endif %}">
+                        <i class="bi bi-laptop nav-icon"></i>
+                        <span class="nav-text">My Hardware</span>
+                    </a>
+                    
+                    <div class="nav-section-title">Verification</div>
+                    
+                    <a href="#" class="nav-item {% if '/verify-hardware' in request.path %}active{% endif %}">
+                        <i class="bi bi-shield-check nav-icon"></i>
+                        <span class="nav-text">Verify Hardware</span>
+                        <span class="nav-badge" id="pendingVerificationBadge"></span>
+                    </a>
+                    
+                    <a href="#" class="nav-item {% if '/verification-history' in request.path %}active{% endif %}">
+                        <i class="bi bi-clock-history nav-icon"></i>
+                        <span class="nav-text">Verification History</span>
+                    </a>
+                    {% endif %}
+                    
+                    <div class="nav-section-title">Settings</div>
+                    
+                    <a href="{% url 'change_password' %}" class="nav-item {% if request.path == '/change-password/' %}active{% endif %}">
+                        <i class="bi bi-gear nav-icon"></i>
+                        <span class="nav-text">Change Password</span>
+                    </a>
+                    
+                    <a href="{% url 'logout' %}" class="nav-item">
+                        <i class="bi bi-box-arrow-right nav-icon"></i>
+                        <span class="nav-text">Logout</span>
+                    </a>
+                </nav>
+            {% endif %}
+            
+            <!-- Sidebar Footer -->
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar">
+                        <i class="bi bi-person"></i>
+                    </div>
+                    <div class="user-details">
+                        <h6 class="mb-0">{{ user.get_full_name|default:user.username }}</h6>
+                        <small>
+                            <span class="badge {% if user.is_first_login %}bg-warning{% else %}bg-info{% endif %} text-white">
+                                {{ user.get_user_type_display }}
+                            </span>
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Navigation -->
+            <header class="top-nav">
+                <div class="page-title d-flex align-items-center">
+                    <button class="mobile-menu-btn" id="mobileMenuBtn">
+                        <i class="bi bi-list"></i>
+                    </button>
+                    <div>
+                        <h1>{% block page_title %}Dashboard{% endblock %}</h1>
+                        <p class="mb-0">{% block page_subtitle %}Welcome back, {{ user.get_full_name|default:user.username }}!{% endblock %}</p>
+                    </div>
+                </div>
+                
+                <div class="top-nav-actions">
+                    {% if user.user_type == 'manager' and not user.is_first_login %}
+                    <div class="quick-actions">
+                        <a href="{% url 'add_hardware' %}" class="btn-action primary">
+                            <i class="bi bi-plus-circle"></i>
+                            <span>Add Hardware</span>
+                        </a>
+                        <a href="{% url 'create_assignment' %}" class="btn-action">
+                            <i class="bi bi-clipboard-plus"></i>
+                            <span>New Assignment</span>
+                        </a>
+                        <a href="{% url 'manager_auto_verify_page' %}" class="btn-action">
+                            <i class="bi bi-cloud-upload"></i>
+                            <span>Auto Verify</span>
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </header>
+            
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- First Login Warning Banner -->
+                {% if user.user_type == 'employee' and user.is_first_login %}
+                <div class="first-login-banner">
+                    <div>
+                        <i class="bi bi-shield-lock fs-4 me-2"></i>
+                        <strong>First Login Detected!</strong> Please change your password to continue.
+                    </div>
+                    <a href="{% url 'change_password' %}" class="btn btn-light">
+                        <i class="bi bi-key"></i> Change Password
+                    </a>
+                </div>
+                {% endif %}
+                
+                <!-- Messages -->
+                {% if messages %}
+                <div class="messages-container">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        <i class="bi bi-{% if message.tags == 'success' %}check-circle-fill{% elif message.tags == 'error' %}exclamation-circle-fill{% elif message.tags == 'warning' %}exclamation-triangle-fill{% else %}info-circle-fill{% endif %}"></i>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <!-- Content Block -->
+                {% block content %}{% endblock %}
+            </div>
+            
+            <!-- Footer -->
+            <footer class="main-footer">
+                <div class="copyright">
+                    <i class="bi bi-c-circle"></i> 2000-{% now "Y" %} Eduquity. All rights reserved.
+                    <br>
+                    <small>Thought-leader in the Indian assessment industry since 2000</small>
+                </div>
+            </footer>
+        </main>
+    </div>
+    
+    {% else %}
+    <!-- Non-authenticated Layout -->
+    <div class="container">
+        {% block auth_content %}{% endblock %}
+    </div>
+    {% endif %}
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    
+    <script>
+        $(document).ready(function() {
+            // Mobile menu toggle
+            $('#mobileMenuBtn').click(function(e) {
+                e.stopPropagation();
+                $('#sidebar').addClass('show');
+                $('#overlay').addClass('show');
+                $('body').css('overflow', 'hidden');
+            });
+            
+            // Close mobile menu
+            $('#overlay').click(function() {
+                $('#sidebar').removeClass('show');
+                $(this).removeClass('show');
+                $('body').css('overflow', 'auto');
+            });
+            
+            // Auto-dismiss alerts after 5 seconds
+            setTimeout(function() {
+                $('.alert').fadeOut(300, function() {
+                    $(this).remove();
+                });
+            }, 5000);
+            
+            // Handle window resize
+            $(window).resize(function() {
+                if ($(window).width() > 992) {
+                    $('#sidebar').removeClass('show');
+                    $('#overlay').removeClass('show');
+                    $('body').css('overflow', 'auto');
+                }
+            });
+            
+            // Update badge counts
+            function updateBadgeCounts() {
+                $('.nav-badge').each(function() {
+                    if ($(this).text() === '0' || $(this).text() === '') {
+                        $(this).hide();
+                    } else {
+                        $(this).show();
+                    }
+                });
+            }
+            updateBadgeCounts();
+            
+            // Force icon reload if they're not visible
+            function checkIcons() {
+                $('.bi').each(function() {
+                    if ($(this).css('display') === 'none') {
+                        $(this).css('display', 'inline-block');
+                    }
+                });
+            }
+            setTimeout(checkIcons, 500);
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+    {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block title %}Create Project - Eduquity Hardware Management{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h2>Create New Project</h2>
+        <p class="text-muted">Create a new project for hardware assignments</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-folder-plus"></i> Project Details
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{% url 'create_project' %}">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="project_id" class="form-label">Project ID *</label>
+                            <input type="text" class="form-control" id="project_id" name="project_id" 
+                                   placeholder="e.g., PROJ-2024-001" required>
+                            <small class="text-muted">Unique project identifier</small>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="project_name" class="form-label">Project Name *</label>
+                            <input type="text" class="form-control" id="project_name" name="project_name" 
+                                   placeholder="e.g., Client Assessment - March 2024" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" 
+                                  rows="3" placeholder="Project description..."></textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="start_date" class="form-label">Start Date *</label>
+                            <input type="date" class="form-control" id="start_date" name="start_date" required>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="end_date" class="form-label">End Date *</label>
+                            <input type="date" class="form-control" id="end_date" name="end_date" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="location" class="form-label">Location *</label>
+                        <input type="text" class="form-control" id="location" name="location" 
+                               placeholder="e.g., Delhi Office, Mumbai Center" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-outline-info">
+                        <i class="bi bi-folder-plus"></i> Create Project
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-info-circle"></i> Project Information
+                </h4>
+            </div>
+            <div class="card-body">
+                <p><strong>About Projects:</strong></p>
+                <ul>
+                    <li>Projects represent assessment activities</li>
+                    <li>Each project can have multiple hardware assignments</li>
+                    <li>Project ID must be unique</li>
+                    <li>Location indicates where hardware will be used</li>
+                    <li>Employees will be assigned hardware for specific projects</li>
+                </ul>
+                
+                <div class="alert alert-warning mt-3">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <strong>Note:</strong> Once created, projects cannot be deleted if they have active assignments.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

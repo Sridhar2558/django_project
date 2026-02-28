@@ -1,0 +1,679 @@
+{% extends 'base.html' %}
+{% block title %}Employee List - Eduquity Hardware Management{% endblock %}
+
+{% block page_title %}Employee Management{% endblock %}
+{% block page_subtitle %}View and manage all employees{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Modal styling - Clean and simple */
+    .modal-content {
+        border: none;
+        border-radius: 16px;
+        overflow: hidden;
+    }
+    
+    .modal-header {
+        padding: 1.25rem 1.5rem;
+        border-bottom: none;
+    }
+    
+    .modal-header.bg-danger {
+        background: linear-gradient(135deg, #dc3545, #c82333) !important;
+    }
+    
+    .modal-header .btn-close {
+        filter: brightness(0) invert(1);
+        opacity: 0.8;
+    }
+    
+    .modal-header .btn-close:hover {
+        opacity: 1;
+    }
+    
+    .modal-body {
+        padding: 2rem 1.5rem;
+    }
+    
+    .modal-footer {
+        padding: 1.25rem 1.5rem;
+        border-top: 1px solid #e2e8f0;
+        background-color: #f8fafc;
+    }
+    
+    /* Warning icon styling */
+    .warning-icon {
+        width: 80px;
+        height: 80px;
+        background: rgba(220, 53, 69, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+    }
+    
+    .warning-icon i {
+        font-size: 3rem;
+        color: #dc3545;
+    }
+    
+    /* Employee details card */
+    .employee-details {
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin: 1.5rem 0;
+    }
+    
+    .employee-details p {
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .employee-details p:last-child {
+        margin-bottom: 0;
+    }
+    
+    .employee-details strong {
+        min-width: 100px;
+        color: #1e293b;
+        font-weight: 600;
+    }
+    
+    .employee-details span {
+        color: #64748b;
+    }
+    
+    /* Button styling */
+    .btn {
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+    
+    .btn-outline-danger {
+        border-color: #e2e8f0;
+        color: #64748b;
+    }
+    
+    .btn-outline-danger:hover {
+        background-color: #dc3545;
+        color: white;
+        border-color: #dc3545;
+    }
+    
+    .btn-outline-danger:disabled,
+    .btn-outline-danger.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    /* Stat icons */
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .bg-opacity-10 {
+        --bs-bg-opacity: 0.1;
+    }
+    
+    /* Table styling - COMPACT VERSION */
+    .table {
+        width: 100%;
+        table-layout: fixed; /* Fixed table layout */
+    }
+    
+    .table td {
+        vertical-align: middle;
+        padding: 0.75rem 0.5rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .table th {
+        background-color: #f8fafc;
+        font-weight: 600;
+        color: #1e293b;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 0.75rem 0.5rem;
+        white-space: nowrap;
+    }
+    
+    /* Column width definitions */
+    .table th:nth-child(1) { width: 18%; } /* Name */
+    .table th:nth-child(2) { width: 12%; } /* Username */
+    .table th:nth-child(3) { width: 18%; } /* Email */
+    .table th:nth-child(4) { width: 10%; } /* Phone */
+    .table th:nth-child(5) { width: 8%; } /* Created */
+    .table th:nth-child(6) { width: 8%; } /* Status */
+    .table th:nth-child(7) { width: 12%; } /* Assignments */
+    .table th:nth-child(8) { width: 14%; } /* Actions */
+    
+    /* Badge styling */
+    .badge {
+        font-weight: 500;
+        border-radius: 20px;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.7rem;
+        white-space: nowrap;
+    }
+    
+    .badge i {
+        margin-right: 2px;
+        font-size: 0.7rem;
+    }
+    
+    /* Card styling */
+    .card {
+        border-radius: 12px;
+        overflow: hidden;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.08) !important;
+    }
+    
+    /* Form controls */
+    .form-control, .form-select {
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.9rem;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #E04D00;
+        box-shadow: 0 0 0 0.2rem rgba(224, 77, 0, 0.25);
+    }
+    
+    /* Action buttons */
+    .btn-group .btn {
+        padding: 0.25rem 0.4rem;
+        font-size: 0.8rem;
+    }
+    
+    .btn-group .btn i {
+        font-size: 0.8rem;
+    }
+    
+    /* Responsive table container */
+    .table-responsive {
+        overflow-x: auto;
+        max-width: 100%;
+    }
+    
+    /* Employee avatar */
+    .employee-avatar {
+        width: 28px;
+        height: 28px;
+        font-size: 0.8rem;
+    }
+    
+    /* Dark mode support */
+    [data-theme="dark"] .modal-content {
+        background-color: #2d3748;
+        color: #e2e8f0;
+    }
+    
+    [data-theme="dark"] .modal-footer {
+        background-color: #1e293b;
+        border-top-color: #4a5568;
+    }
+    
+    [data-theme="dark"] .employee-details {
+        background-color: #1e293b;
+        border-color: #4a5568;
+    }
+    
+    [data-theme="dark"] .employee-details strong {
+        color: #e2e8f0;
+    }
+    
+    [data-theme="dark"] .employee-details span {
+        color: #94a3b8;
+    }
+    
+    [data-theme="dark"] .table th {
+        background-color: #1e293b;
+        color: #e2e8f0;
+        border-bottom-color: #4a5568;
+    }
+    
+    [data-theme="dark"] .table td {
+        color: #e2e8f0;
+    }
+    
+    [data-theme="dark"] .form-control,
+    [data-theme="dark"] .form-select {
+        background-color: #1e293b;
+        border-color: #4a5568;
+        color: #e2e8f0;
+    }
+    
+    [data-theme="dark"] .form-control::placeholder {
+        color: #94a3b8;
+    }
+    
+    @media (max-width: 1200px) {
+        .table th:nth-child(1) { width: 15%; }
+        .table th:nth-child(2) { width: 10%; }
+        .table th:nth-child(3) { width: 15%; }
+        .table th:nth-child(4) { width: 8%; }
+        .table th:nth-child(5) { width: 8%; }
+        .table th:nth-child(6) { width: 8%; }
+        .table th:nth-child(7) { width: 10%; }
+        .table th:nth-child(8) { width: 26%; }
+    }
+    
+    @media (max-width: 768px) {
+        .modal-dialog {
+            margin: 1rem;
+        }
+        
+        .warning-icon {
+            width: 60px;
+            height: 60px;
+        }
+        
+        .warning-icon i {
+            font-size: 2rem;
+        }
+        
+        .employee-details strong {
+            min-width: 80px;
+        }
+        
+        .table th {
+            font-size: 0.75rem;
+        }
+        
+        .table td {
+            font-size: 0.75rem;
+            padding: 0.5rem 0.25rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Action Buttons -->
+<div class="d-flex justify-content-end gap-2 mb-4">
+    <a href="{% url 'create_employee' %}" class="btn btn-primary">
+        <i class="bi bi-person-plus-fill me-2"></i>Add New Employee
+    </a>
+    <a href="{% url 'manager_dashboard' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
+    </a>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <span class="text-muted text-uppercase small fw-bold">Total Employees</span>
+                        <h2 class="mb-0 fw-bold mt-2">{{ total_employees }}</h2>
+                    </div>
+                    <div class="stat-icon rounded-circle p-3">
+                        <i class="bi bi-people-fill fs-2 text-primary"></i>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <span class="text-muted small">All registered employees</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <span class="text-muted text-uppercase small fw-bold">Active</span>
+                        <h2 class="mb-0 fw-bold mt-2">{{ active_employees }}</h2>
+                    </div>
+                    <div class="stat-icon rounded-circle p-3">
+                        <i class="bi bi-check-circle-fill fs-2 text-success"></i>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <span class="text-muted small">Have logged in</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <span class="text-muted text-uppercase small fw-bold">Pending</span>
+                        <h2 class="mb-0 fw-bold mt-2">{{ pending_employees }}</h2>
+                    </div>
+                    <div class="stat-icon rounded-circle p-3">
+                        <i class="bi bi-clock-fill fs-2 text-warning"></i>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <span class="text-muted small">Awaiting first login</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search and Filter -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0 py-3">
+                <h5 class="mb-0 fw-bold">
+                    <i class="bi bi-search me-2 text-primary"></i>Search & Filter
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-0">
+                                <i class="bi bi-search text-primary"></i>
+                            </span>
+                            <input type="text" class="form-control border-0 bg-light" id="searchInput" placeholder="Search...">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select bg-light border-0" id="statusFilter">
+                            <option value="all">All Status</option>
+                            <option value="active">Active</option>
+                            <option value="pending">Pending</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select bg-light border-0" id="assignmentFilter">
+                            <option value="all">All Assignments</option>
+                            <option value="active">With Active</option>
+                            <option value="inactive">No Active</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button class="btn btn-outline-primary w-100" onclick="resetFilters()">
+                            <i class="bi bi-eraser me-2"></i>Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Employees Table -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center py-3">
+        <h5 class="mb-0 fw-bold">
+            <i class="bi bi-list-check me-2 text-primary"></i>All Employees
+        </h5>
+        <span class="badge bg-light text-dark border px-3 py-2">{{ employees|length }} Total</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="employeesTable">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="px-2">Name</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Created</th>
+                        <th>Status</th>
+                        <th>Assignments</th>
+                        <th class="px-2">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for emp in employees %}
+                    <tr class="employee-row" 
+                        data-name="{{ emp.get_full_name|default:emp.username|lower }}"
+                        data-username="{{ emp.username|lower }}"
+                        data-email="{{ emp.email|lower }}"
+                        data-status="{% if emp.is_first_login %}pending{% else %}active{% endif %}"
+                        data-active-assignments="{{ emp.active_assignments }}">
+                        <td class="px-2">
+                            <div class="d-flex align-items-center">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center me-1 employee-avatar" style="width: 28px; height: 28px;">
+                                    <span class="fw-bold text-primary small">{{ emp.get_full_name|default:emp.username|first|upper }}</span>
+                                </div>
+                                <span class="small text-truncate" style="max-width: 100px;">{{ emp.get_full_name|default:emp.username }}</span>
+                            </div>
+                        </td>
+                        <td><code class="bg-light px-1 py-0 rounded small">{{ emp.username }}</code></td>
+                        <td><span class="small text-truncate" style="max-width: 120px;">{{ emp.email }}</span></td>
+                        <td><span class="small">{{ emp.phone|default:"—" }}</span></td>
+                        <td><span class="small">{{ emp.date_joined|date:"d/m/y" }}</span></td>
+                        <td>
+                            {% if emp.is_first_login %}
+                                <span class="badge bg-warning text-white">
+                                    <i class="bi bi-clock"></i> Pending
+                                </span>
+                            {% else %}
+                                <span class="badge bg-success text-white">
+                                    <i class="bi bi-check-circle"></i> Active
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <span class="badge bg-info text-white" title="Active">
+                                    <i class="bi bi-clipboard-check"></i> {{ emp.active_assignments }}
+                                </span>
+                                <span class="badge bg-secondary text-white" title="Total">
+                                    <i class="bi bi-clipboard-data"></i> {{ emp.total_assignments }}
+                                </span>
+                            </div>
+                        </td>
+                        <td class="px-2">
+                            {% if emp.active_assignments == 0 %}
+                            <button type="button" class="btn btn-sm btn-outline-danger py-0 px-1" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#deleteModal{{ emp.id }}"
+                                    title="Delete Employee">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                            {% else %}
+                            <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-1" 
+                                    disabled
+                                    title="Has active assignments">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    
+                    <!-- Delete Modal for each employee -->
+                    <div class="modal fade" id="deleteModal{{ emp.id }}" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header bg-danger text-white">
+                                    <h5 class="modal-title">
+                                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                        Delete Employee
+                                    </h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <div class="warning-icon">
+                                        <i class="bi bi-person-x"></i>
+                                    </div>
+                                    
+                                    <h5 class="fw-bold mb-3">Confirm Deletion</h5>
+                                    <p class="text-muted mb-4">Are you sure you want to delete this employee? This action cannot be undone.</p>
+                                    
+                                    <div class="employee-details text-start">
+                                        <p>
+                                            <strong><i class="bi bi-person me-2 text-primary"></i>Name:</strong>
+                                            <span class="ms-2">{{ emp.get_full_name|default:emp.username }}</span>
+                                        </p>
+                                        <p>
+                                            <strong><i class="bi bi-at me-2 text-primary"></i>Username:</strong>
+                                            <span class="ms-2">{{ emp.username }}</span>
+                                        </p>
+                                        <p>
+                                            <strong><i class="bi bi-envelope me-2 text-primary"></i>Email:</strong>
+                                            <span class="ms-2">{{ emp.email }}</span>
+                                        </p>
+                                        <p>
+                                            <strong><i class="bi bi-telephone me-2 text-primary"></i>Phone:</strong>
+                                            <span class="ms-2">{{ emp.phone|default:"Not provided" }}</span>
+                                        </p>
+                                        <p>
+                                            <strong><i class="bi bi-calendar me-2 text-primary"></i>Created:</strong>
+                                            <span class="ms-2">{{ emp.date_joined|date:"d M Y" }}</span>
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-outline-secondary px-3" data-bs-dismiss="modal">
+                                        <i class="bi bi-x-circle me-1"></i>Cancel
+                                    </button>
+                                    <form method="POST" action="{% url 'delete_employee' emp.id %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-danger px-3">
+                                            <i class="bi bi-trash me-1"></i>Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-5">
+                            <div class="py-4">
+                                <i class="bi bi-people" style="font-size: 3rem; color: #dee2e6;"></i>
+                                <h5 class="mt-3 text-dark">No Employees Found</h5>
+                                <p class="text-muted mb-0">You haven't created any employee accounts yet.</p>
+                                <a href="{% url 'create_employee' %}" class="btn btn-primary mt-3">
+                                    <i class="bi bi-person-plus-fill me-2"></i>Create First Employee
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Management Tips -->
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center flex-wrap">
+                    <div class="rounded-circle p-2 me-3">
+                        <i class="bi bi-info-circle-fill text-primary fs-4"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h6 class="fw-bold mb-1">Employee Management Tips</h6>
+                        <div class="d-flex flex-wrap gap-3">
+                            <small class="text-muted">
+                                <i class="bi bi-dot text-primary"></i> Employees with active assignments cannot be deleted
+                            </small>
+                            <small class="text-muted">
+                                <i class="bi bi-dot text-primary"></i> Active employees have logged in
+                            </small>
+                            <small class="text-muted">
+                                <i class="bi bi-dot text-primary"></i> Pending employees haven't logged in yet
+                            </small>
+                        </div>
+                    </div>
+                    <div class="ms-3">
+                        <span class="badge bg-light text-dark border px-2 py-1">
+                            <i class="bi bi-clock-history me-1"></i>{% now "d/m/y H:i" %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Search and filter functionality
+        const searchInput = document.getElementById('searchInput');
+        const statusFilter = document.getElementById('statusFilter');
+        const assignmentFilter = document.getElementById('assignmentFilter');
+        const rows = document.querySelectorAll('.employee-row');
+        
+        function filterTable() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const status = statusFilter.value;
+            const assignment = assignmentFilter.value;
+            
+            rows.forEach(row => {
+                const name = row.dataset.name;
+                const username = row.dataset.username;
+                const email = row.dataset.email;
+                const rowStatus = row.dataset.status;
+                const activeAssignments = parseInt(row.dataset.activeAssignments);
+                
+                let show = true;
+                
+                // Search filter
+                if (searchTerm && !name.includes(searchTerm) && !username.includes(searchTerm) && !email.includes(searchTerm)) {
+                    show = false;
+                }
+                
+                // Status filter
+                if (status !== 'all' && rowStatus !== status) {
+                    show = false;
+                }
+                
+                // Assignment filter
+                if (assignment === 'active' && activeAssignments === 0) {
+                    show = false;
+                } else if (assignment === 'inactive' && activeAssignments > 0) {
+                    show = false;
+                }
+                
+                row.style.display = show ? '' : 'none';
+            });
+        }
+        
+        searchInput.addEventListener('input', filterTable);
+        statusFilter.addEventListener('change', filterTable);
+        assignmentFilter.addEventListener('change', filterTable);
+        
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+    });
+    
+    function resetFilters() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('statusFilter').value = 'all';
+        document.getElementById('assignmentFilter').value = 'all';
+        
+        // Trigger filter to show all rows
+        const event = new Event('input');
+        document.getElementById('searchInput').dispatchEvent(event);
+    }
+</script>
+{% endblock %}

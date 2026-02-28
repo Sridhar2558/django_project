@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% block title %}Add Hardware - Eduquity Hardware Management{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h2>Add New Hardware</h2>
+        <p class="text-muted">Add new hardware items to your inventory</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-laptop"></i> Hardware Details
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{% url 'add_hardware' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="hardware_type" class="form-label">Hardware Type *</label>
+                        <select class="form-select" id="hardware_type" name="hardware_type" required>
+                            <option value="">Select hardware type</option>
+                            {% for hw_type in hardware_types %}
+                            <option value="{{ hw_type.id }}">{{ hw_type.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="serial_number" class="form-label">Serial Number *</label>
+                        <input type="text" class="form-control" id="serial_number" name="serial_number" 
+                               placeholder="Enter unique serial number" required>
+                        <small class="text-muted">Must be unique for each hardware item</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="model_name" class="form-label">Model Name *</label>
+                        <input type="text" class="form-control" id="model_name" name="model_name" 
+                               placeholder="e.g., Dell Latitude 5420, HP ProBook 450 G8" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="brand" class="form-label">Brand</label>
+                        <input type="text" class="form-control" id="brand" name="brand" 
+                               placeholder="e.g., Dell, HP, Lenovo, Cisco">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="specifications" class="form-label">Specifications</label>
+                        <textarea class="form-control" id="specifications" name="specifications" 
+                                  rows="3" placeholder="Additional specifications..."></textarea>
+                        <small class="text-muted">RAM, Processor, Storage, etc.</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="purchase_date" class="form-label">Purchase Date</label>
+                        <input type="date" class="form-control" id="purchase_date" name="purchase_date">
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> 
+                        Hardware will be added with "Available" status and can be assigned to employees.
+                    </div>
+                    
+                    <button type="submit" class="btn btn-outline-info">
+                        <i class="bi bi-save"></i> Add Hardware
+                    </button>
+                    <a href="{% url 'manage_hardware' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to Inventory
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-info-circle"></i> Hardware Types
+                </h4>
+            </div>
+            <div class="card-body">
+                <p><strong>Common Hardware Types:</strong></p>
+                <ul class="list-group">
+                    {% for hw_type in hardware_types %}
+                    <li class="list-group-item">{{ hw_type.name }}</li>
+                    {% empty %}
+                    <li class="list-group-item text-muted">No hardware types found</li>
+                    {% endfor %}
+                </ul>
+                
+                <div class="alert alert-warning mt-3">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <strong>Important:</strong> Ensure serial numbers are accurate and unique.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
